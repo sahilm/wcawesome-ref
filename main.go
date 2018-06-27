@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"sync/atomic"
+	"os"
 )
 
 type event struct {
@@ -24,6 +25,7 @@ type refNotification struct {
 var sendkill int64
 
 func notificationHandler(w http.ResponseWriter, r *http.Request) {
+	orchestratorURL := os.Getenv("ORCHESTRATOR_URL")
 	message := r.URL.Path
 	message = strings.TrimPrefix(message, "/")
 	bodyBytes, _ := ioutil.ReadAll(r.Body)
@@ -40,18 +42,16 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 	if atomic.LoadInt64(&sendkill) == 2 {
 		fmt.Println("KILL! KILL! KILL! KILL! KILL! KILL! KILL! ")
 		atomic.StoreInt64(&sendkill, 0)
-		//req, err := http.NewRequest("POST", refURL, )
-		//if err != nil {
-		//	fmt.Printf("%s", err)
-		//}
-		//req.Header.Set("Content-Type", "application/json")
-		//
-		//client := &http.Client{}
-		//resp, err := client.Do(req)
-		//if err != nil {
-		//	panic(err)
-		//}
-		//resp.Body.Close()
+		req, err := http.NewRequest("POST", orchestratorURL+"/gameover", nil)
+		if err != nil {
+			fmt.Printf("%s", err)
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err)
+		}
+		resp.Body.Close()
 	}
 
 	fmt.Println(RefNotification.Event.Time +
@@ -61,6 +61,7 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(message))
 }
+
 func main() {
 	http.HandleFunc("/", notificationHandler)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
