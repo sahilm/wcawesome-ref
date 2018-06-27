@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"sync/atomic"
 	"os"
+	"github.com/fatih/color"
 )
 
 type event struct {
@@ -53,14 +54,22 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 	if RefNotification.Country == "GAME_OVER" {
 		atomic.AddInt64(&sendkill, 1)
 	} else {
-		fmt.Println(RefNotification.Event.Time +
-			" " + RefNotification.Country +
-			" " + RefNotification.Event.Player +
-			" " + RefNotification.Event.TypeOfEvent)
+		if strings.Contains(strings.ToLower(RefNotification.Event.TypeOfEvent), "yellow") {
+			color.Yellow(RefNotification.Event.Time +
+				" " + RefNotification.Country +
+				" " + RefNotification.Event.Player +
+				" " + RefNotification.Event.TypeOfEvent)
+		} else {
+			fmt.Println(RefNotification.Event.Time +
+				" " + RefNotification.Country +
+				" " + RefNotification.Event.Player +
+				" " + RefNotification.Event.TypeOfEvent)
+		}
 
 		if strings.Contains(strings.ToLower(RefNotification.Event.TypeOfEvent), "goal") {
-			fmt.Println(goal)
+			color.Green(goal)
 		}
+
 		w.Write([]byte(message))
 	}
 
