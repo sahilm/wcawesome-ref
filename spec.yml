@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: ref
+  name: ref
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: ref
+  type: NodePort
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ref
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ref
+    spec:
+      containers:
+      - name: ref
+        image: smuthoo/wcawesome-ref
+        env:
+        - name: ORCHESTRATOR_URL
+          value: https://orchestrator.plex-houston.cloudops-eu.cf-app.com:9090
+        ports:
+        - containerPort: 8080
