@@ -27,6 +27,16 @@ type refNotification struct {
 
 var sendkill int64
 
+const gameOver = `
+
+ _____                        _____                
+|  __ \                      |  _  |               
+| |  \/ __ _ _ __ ___   ___  | | | |_   _____ _ __ 
+| | __ / _  | '_   _ \ / _ \ | | | \ \ / / _ \ '__|
+| |_\ \ (_| | | | | | |  __/ \ \_/ /\ V /  __/ |   
+ \____/\__,_|_| |_| |_|\___|  \___/  \_/ \___|_|   
+`
+
 const goal = `
                                        
                                    88  
@@ -76,8 +86,14 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if atomic.LoadInt64(&sendkill) == 2 {
+
+
+		fmt.Println(gameOver)
+
 		atomic.StoreInt64(&sendkill, 0)
 		req, err := http.NewRequest("POST", orchestratorURL+"/gameover", bytes.NewBufferString(RefNotification.FifaID))
+
+
 		if err != nil {
 			fmt.Printf("%s", err)
 		}
