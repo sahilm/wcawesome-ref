@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"os"
 	"github.com/fatih/color"
+	"bytes"
 )
 
 type event struct {
@@ -21,6 +22,7 @@ type event struct {
 type refNotification struct {
 	Country string `json:"country"`
 	Event   event  `json:"event"`
+	FifaID  string `json:"fifa_id"`
 }
 
 var sendkill int64
@@ -75,7 +77,7 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 
 	if atomic.LoadInt64(&sendkill) == 2 {
 		atomic.StoreInt64(&sendkill, 0)
-		req, err := http.NewRequest("POST", orchestratorURL+"/gameover", nil)
+		req, err := http.NewRequest("POST", orchestratorURL+"/gameover", bytes.NewBufferString(RefNotification.FifaID))
 		if err != nil {
 			fmt.Printf("%s", err)
 		}
