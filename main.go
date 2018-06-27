@@ -24,6 +24,20 @@ type refNotification struct {
 
 var sendkill int64
 
+const goal = `
+                                       
+                                   88  
+                                   88  
+                                   88  
+ ,adPPYb,d8  ,adPPYba,  ,adPPYYba, 88  
+a8"     Y88 a8"     "8a ""      Y8 88  
+8b       88 8b       d8 ,adPPPPP88 88  
+"8a,   ,d88 "8a,   ,a8" 88,    ,88 88  
+  "YbbdP"Y8   "YbbdP"'   "8bbdP"Y8 88
+aa,    ,88
+"Y8bbdP"
+`
+
 func notificationHandler(w http.ResponseWriter, r *http.Request) {
 	orchestratorURL := os.Getenv("ORCHESTRATOR_URL")
 	message := r.URL.Path
@@ -38,9 +52,19 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 
 	if RefNotification.Country == "GAME_OVER" {
 		atomic.AddInt64(&sendkill, 1)
+	} else {
+		fmt.Println(RefNotification.Event.Time +
+			" " + RefNotification.Country +
+			" " + RefNotification.Event.Player +
+			" " + RefNotification.Event.TypeOfEvent)
+
+		if strings.Contains(strings.ToLower(RefNotification.Event.TypeOfEvent), "goal") {
+			fmt.Println(goal)
+		}
+		w.Write([]byte(message))
 	}
+
 	if atomic.LoadInt64(&sendkill) == 2 {
-		fmt.Println("KILL! KILL! KILL! KILL! KILL! KILL! KILL! ")
 		atomic.StoreInt64(&sendkill, 0)
 		req, err := http.NewRequest("POST", orchestratorURL+"/gameover", nil)
 		if err != nil {
@@ -53,13 +77,6 @@ func notificationHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		resp.Body.Close()
 	}
-
-	fmt.Println(RefNotification.Event.Time +
-		" " + RefNotification.Country +
-		" " + RefNotification.Event.Player +
-		" " + RefNotification.Event.TypeOfEvent)
-
-	w.Write([]byte(message))
 }
 
 func main() {
